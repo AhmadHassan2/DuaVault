@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>DuaVault demo</title>
+<meta name="viewport" content="width=1920" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Figtree:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=block" rel="stylesheet" />
+<style>
+  :root {
+    --ivory: #f6f2ea; --paper: #fbf8f2; --ink: #2f2a24; --muted: #7b7166; --forest: #2f5f48; --forest-deep: #1f4433;
+    --sage: #8fae94; --gold: #c9a24e; --line: #e4ddd0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--ivory); font-family: Figtree, system-ui, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .serif { font-family: Newsreader, Georgia, serif; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+
+  /* ── captions ─────────────────────────────────────────── */
+  #captions { position: absolute; left: 150px; top: 0; bottom: 0; width: 760px; display: flex; flex-direction: column; justify-content: center; }
+  #captions .num { font-size: 18px; color: var(--muted); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+  #captions h1 { font-family: Newsreader, serif; font-weight: 500; font-size: 72px; line-height: 1.05; margin-top: 14px; letter-spacing: -0.01em; }
+  #captions p { font-size: 24px; line-height: 1.5; color: var(--muted); margin-top: 22px; max-width: 620px; }
+  #captions .rule { width: 56px; height: 2px; background: var(--forest); margin-top: 34px; }
+  .cap-enter { animation: capIn .6s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes capIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  /* ── phone ────────────────────────────────────────────── */
+  #phone { position: absolute; z-index: 1; left: 1140px; top: 92px; width: 418px; height: 896px; border-radius: 62px; background: #111; padding: 14px;
+    box-shadow: 0 0 0 2px #2b2b2b, 0 40px 80px -30px rgba(40,30,20,.45); transition: transform .8s cubic-bezier(.2,.7,.2,1), opacity .5s; }
+  #phone .screen { position: relative; width: 390px; height: 868px; border-radius: 48px; overflow: hidden; background: #000; }
+  #phone .island { position: absolute; z-index: 50; top: 11px; left: 50%; transform: translateX(-50%); width: 112px; height: 32px; border-radius: 20px; background: #000; }
+  .layer { position: absolute; inset: 0; opacity: 0; transition: opacity .45s; pointer-events: none; }
+  .layer.on { opacity: 1; pointer-events: auto; }
+  #appwrap { background: var(--ivory); }
+  #app { position: absolute; top: 50px; left: 0; border: 0; width: 390px; height: 818px; background: var(--ivory); }
+  .statusbar { position: absolute; z-index: 40; top: 0; left: 0; right: 0; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 6px 34px 0 40px; font-size: 16px; font-weight: 600; pointer-events: none; }
+  .statusbar .dots { display: flex; gap: 6px; align-items: center; }
+  .statusbar .bar { width: 26px; height: 12px; border: 1.6px solid currentColor; border-radius: 4px; position: relative; opacity: .9; }
+  .statusbar .bar::after { content: ""; position: absolute; inset: 1.5px; right: 5px; background: currentColor; border-radius: 1.5px; }
+  #sb { color: #fff; transition: color .3s; }
+  #sb.dark { color: #1d1a16; }
+
+  /* ── reels ────────────────────────────────────────────── */
+  #reels { background: #000; color: #fff; }
+  #feed { position: absolute; inset: 0; transition: transform 1.1s cubic-bezier(.6,0,.2,1); }
+  .reel { position: absolute; left: 0; width: 390px; height: 868px; overflow: hidden; }
+  .reel .bg { position: absolute; inset: -40px; filter: saturate(1.05); }
+  .blob { position: absolute; border-radius: 50%; filter: blur(40px); opacity: .75; animation: drift 9s ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(30px,-40px) scale(1.15); } }
+  .reel .shade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,.25), rgba(0,0,0,0) 18%, rgba(0,0,0,0) 62%, rgba(0,0,0,.55)); }
+  .reel .topbar { position: absolute; top: 58px; left: 0; right: 0; display: flex; justify-content: center; gap: 22px; font-weight: 600; font-size: 16px; }
+  .reel .topbar span { opacity: .65; } .reel .topbar span.cur { opacity: 1; border-bottom: 2px solid #fff; padding-bottom: 4px; }
+  .rail { position: absolute; right: 12px; bottom: 150px; display: flex; flex-direction: column; align-items: center; gap: 20px; font-size: 12px; font-weight: 600; }
+  .rail div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .rail svg { width: 30px; height: 30px; stroke: #fff; fill: none; stroke-width: 1.8; }
+  .meta { position: absolute; left: 16px; right: 70px; bottom: 96px; font-size: 14px; }
+  .meta .who { display: flex; align-items: center; gap: 9px; font-weight: 600; }
+  .meta .av { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid #fff; }
+  .meta .follow { border: 1px solid rgba(255,255,255,.7); border-radius: 8px; padding: 2px 9px; font-size: 13px; }
+  .meta .cap { margin-top: 8px; opacity: .92; }
+  .tabbar { position: absolute; left: 0; right: 0; bottom: 0; height: 82px; background: #000; display: flex; justify-content: space-around; padding-top: 14px; }
+  .tabbar svg { width: 27px; height: 27px; stroke: #fff; fill: none; stroke-width: 1.8; opacity: .9; }
+  .bigtext { position: absolute; left: 24px; right: 24px; top: 300px; font-family: Figtree; font-weight: 700; font-size: 34px; line-height: 1.15; text-shadow: 0 2px 18px rgba(0,0,0,.35); }
+
+  /* the dua post */
+  .dua-card { position: absolute; left: 22px; right: 22px; top: 172px; text-align: center; }
+  .dua-card .ar { font-family: Amiri, serif; font-size: 30px; line-height: 1.95; direction: rtl; color: #fff; }
+  .dua-card .en { margin-top: 20px; font-family: Figtree; font-size: 15.5px; line-height: 1.5; color: rgba(255,255,255,.95); }
+  .dua-card .src { margin-top: 16px; font-size: 13px; letter-spacing: .04em; color: #e9d7a6; }
+  .dua-card .orn { margin: 0 auto 22px; width: 64px; height: 1px; background: rgba(233,215,166,.7); }
+
+  /* screenshot effects */
+  #flash { position: absolute; inset: 0; z-index: 60; background: #fff; opacity: 0; pointer-events: none; }
+  #flash.go { animation: flash .45s ease-out; }
+  @keyframes flash { 0% { opacity: 0; } 15% { opacity: .95; } 100% { opacity: 0; } }
+  #thumb { position: absolute; z-index: 61; left: 0; top: 0; width: 390px; height: 868px; border-radius: 0; opacity: 0; pointer-events: none;
+    transition: all .6s cubic-bezier(.2,.7,.2,1); box-shadow: 0 10px 30px rgba(0,0,0,.45); border: 0 solid #fff; object-fit: cover; }
+  #thumb.small { left: 18px; top: 640px; width: 96px; height: 208px; border-radius: 12px; border-width: 3px; opacity: 1; }
+  #thumb.gone { transform: translateX(-140px); opacity: 0; }
+
+  /* touch indicator */
+  #touch { position: absolute; z-index: 200; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(255,255,255,.55);
+    border: 2px solid rgba(47,95,72,.55); box-shadow: 0 4px 14px rgba(0,0,0,.18); opacity: 0; transition: left .55s cubic-bezier(.3,.7,.3,1), top .55s cubic-bezier(.3,.7,.3,1), opacity .25s, transform .15s; pointer-events: none; }
+  #touch.on { opacity: 1; }
+  #touch.press { transform: scale(.78); background: rgba(47,95,72,.35); }
+
+  /* lock screen */
+  #lock { background: radial-gradient(120% 70% at 50% 0%, #f3c9a2 0%, #d99a7c 35%, #7d6a8c 70%, #3b3f62 100%); color: #fff; }
+  #lock .time { position: absolute; top: 118px; width: 100%; text-align: center; font-size: 92px; font-weight: 600; letter-spacing: -2px; }
+  #lock .date { position: absolute; top: 96px; width: 100%; text-align: center; font-size: 19px; font-weight: 500; opacity: .92; }
+  #notif { position: absolute; left: 12px; right: 12px; top: 300px; padding: 14px 16px; border-radius: 22px; background: rgba(255,255,255,.72);
+    backdrop-filter: blur(20px); color: #1d1a16; display: flex; gap: 12px; opacity: 0; transform: translateY(-20px) scale(.96); transition: all .55s cubic-bezier(.2,.8,.2,1); }
+  #notif.show { opacity: 1; transform: none; }
+  #notif .ic { width: 38px; height: 38px; border-radius: 9px; flex: none; }
+  #notif .t { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; }
+  #notif .t span { font-weight: 400; color: #6d655c; font-size: 13px; }
+  #notif .b { font-size: 14.5px; margin-top: 2px; line-height: 1.35; }
+  #lock .hint { position: absolute; bottom: 26px; width: 100%; text-align: center; font-size: 13px; opacity: .8; }
+  #lock .home-ind { position: absolute; bottom: 9px; left: 50%; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; background: rgba(255,255,255,.9); }
+
+  /* ── full-frame scenes ────────────────────────────────── */
+  .full { position: absolute; inset: 0; z-index: 10; opacity: 0; transition: opacity .7s; pointer-events: none; }
+  .full.on { opacity: 1; }
+  #titlecard { background: var(--ivory); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #titlecard .mark { width: 96px; height: 96px; }
+  #titlecard h1 { font-family: Newsreader; font-weight: 500; font-size: 96px; margin-top: 26px; letter-spacing: -0.01em; }
+  #titlecard p { font-size: 28px; color: var(--muted); margin-top: 14px; }
+  #titlecard .tag { font-family: Newsreader; font-style: italic; font-size: 40px; color: var(--forest); margin-top: 8px; }
+  #titlecard .small { font-size: 20px; margin-top: 36px; color: var(--muted); }
+
+  /* train */
+  #train { background: #e9e1d2; overflow: hidden; }
+  #trainWorld { position: absolute; inset: 0; transform-origin: 1012px 640px; transition: transform 1.7s cubic-bezier(.65,0,.35,1), filter 1.7s; }
+  #trainWorld.zoom { transform: scale(7.2); filter: blur(1.5px); }
+  .sway { animation: sway 3.2s ease-in-out infinite; }
+  @keyframes sway { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(2px) rotate(.05deg); } }
+  .scroll-far { animation: scroll 46s linear infinite; }
+  .scroll-mid { animation: scroll 20s linear infinite; }
+  .scroll-near { animation: scroll 7s linear infinite; }
+  .scroll-poles { animation: scroll 2.6s linear infinite; }
+  @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-1920px); } }
+  #buzz { transform-origin: 1012px 640px; }
+  #buzz.go { animation: buzz .09s linear 10; }
+  @keyframes buzz { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-2px) rotate(-.4deg); } 75% { transform: translateX(2px) rotate(.4deg); } }
+  #glow { opacity: 0; transition: opacity .4s; }
+  #glow.on { opacity: 1; }
+  #bubble { position: absolute; left: 1060px; top: 470px; width: 380px; padding: 16px 18px; border-radius: 20px; background: rgba(255,255,255,.92);
+    box-shadow: 0 20px 40px -18px rgba(0,0,0,.35); display: flex; gap: 12px; opacity: 0; transform: translateY(10px) scale(.95); transition: all .5s cubic-bezier(.2,.8,.2,1); }
+  #bubble.show { opacity: 1; transform: none; }
+  #bubble .ic { width: 40px; height: 40px; border-radius: 10px; flex: none; }
+  #bubble b { font-size: 16px; } #bubble div div { font-size: 15px; color: #4a433b; margin-top: 2px; }
+  #trainCaption { position: absolute; left: 0; bottom: 0; width: 1920px; padding: 120px 110px 70px; color: #fff; transition: opacity .4s;
+    background: linear-gradient(to top, rgba(28,22,16,.62), rgba(28,22,16,0)); text-shadow: 0 2px 16px rgba(0,0,0,.3); }
+  #trainCaption .num { font-size: 18px; opacity: .85; }
+  #trainCaption h1 { font-family: Newsreader; font-weight: 500; font-size: 56px; margin-top: 8px; }
+  #trainCaption p { font-size: 24px; opacity: .92; margin-top: 8px; }
+  #vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(30,20,10,.35)); pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <section id="captions"></section>
+
+  <div id="phone">
+    <div class="screen">
+      <div class="island"></div>
+      <div class="statusbar" id="sb"><span id="sbtime">9:41</span><span class="dots">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="6" width="3" height="6" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+        <span class="bar"></span></span></div>
+
+      <div id="reels" class="layer on">
+        <div id="feed"></div>
+        <div class="tabbar">
+          <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M12 8v8M8 12h8"/></svg>
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="m10 9 5 3-5 3z"/></svg>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+        </div>
+      </div>
+
+      <div id="appwrap" class="layer"><iframe id="app" title="DuaVault app"></iframe></div>
+
+      <div id="lock" class="layer">
+        <div class="date" id="lockDate">Monday 26 October</div>
+        <div class="time">7:30</div>
+        <div id="notif">
+          <svg class="ic" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#2f5f48"/><path d="M256 120l41.6 94.4L392 256l-94.4 41.6L256 392l-41.6-94.4L120 256l94.4-41.6z" fill="#f6f2ea"/><circle cx="256" cy="256" r="34" fill="#c9a24e"/></svg>
+          <div style="flex:1"><div class="t">DuaVault <span>now</span></div><div class="b"><b>Morning adhkar time</b><br><span id="notifBody">Dua of Musa for ease</span></div></div>
+        </div>
+        <div class="hint">Tap to open</div>
+        <div class="home-ind"></div>
+      </div>
+
+      <div id="flash"></div>
+      <img id="thumb" alt="" />
+    </div>
+  </div>
+
+  <!-- illustrated commute -->
+  <div id="train" class="full">
+    <div id="trainWorld">
+      <svg width="1920" height="1080" viewBox="0 0 1920 1080" class="sway" style="position:absolute;inset:0">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9c6d8"/><stop offset=".55" stop-color="#f3d2b0"/><stop offset="1" stop-color="#f6e2c8"/></linearGradient>
+          <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe8db"/><stop offset="1" stop-color="#d9cfbd"/></linearGradient>
+          <linearGradient id="seat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d6b55"/><stop offset="1" stop-color="#2a4d3d"/></linearGradient>
+          <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9c8f7c"/><stop offset="1" stop-color="#857867"/></linearGradient>
+          <radialGradient id="screenGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff6dc" stop-opacity=".9"/><stop offset="1" stop-color="#fff6dc" stop-opacity="0"/></radialGradient>
+          <clipPath id="win1"><rect x="120" y="150" width="760" height="400" rx="38"/></clipPath>
+          <clipPath id="win2"><rect x="1100" y="150" width="760" height="400" rx="38"/></clipPath>
+          <g id="landscape">
+            <rect x="0" y="120" width="3840" height="460" fill="url(#sky)"/>
+            <circle cx="640" cy="300" r="46" fill="#fbe7c4"/>
+            <circle cx="2560" cy="300" r="46" fill="#fbe7c4"/>
+            <g class="scroll-far"><path d="M0 470 C 180 400 330 420 480 450 S 820 380 1000 430 S 1400 470 1600 420 S 1820 420 1920 450 L 1920 580 L 0 580 Z" fill="#b9c9b0"/><path transform="translate(1920 0)" d="M0 470 C 180 400 330 420 480 450 S 820 380 1000 430 S 1400 470 1600 420 S 1820 420 1920 450 L 1920 580 L 0 580 Z" fill="#b9c9b0"/></g>
+            <g class="scroll-mid"><path d="M0 500 C 220 460 420 470 640 500 S 1060 450 1280 495 S 1700 470 1920 500 L 1920 580 L 0 580 Z" fill="#8fae94"/><path transform="translate(1920 0)" d="M0 500 C 220 460 420 470 640 500 S 1060 450 1280 495 S 1700 470 1920 500 L 1920 580 L 0 580 Z" fill="#8fae94"/>
+              <g fill="#5f8a6b"><circle cx="300" cy="478" r="20"/><circle cx="330" cy="470" r="26"/><circle cx="900" cy="470" r="22"/><circle cx="1500" cy="474" r="24"/><circle cx="2220" cy="478" r="20"/><circle cx="2250" cy="470" r="26"/><circle cx="2820" cy="470" r="22"/><circle cx="3420" cy="474" r="24"/></g></g>
+            <g class="scroll-near"><rect x="0" y="530" width="3840" height="60" fill="#5f8a6b"/>
+              <g fill="#4b7357"><rect x="140" y="505" width="120" height="40" rx="20"/><rect x="760" y="510" width="90" height="34" rx="17"/><rect x="1340" y="500" width="150" height="46" rx="23"/><rect x="2060" y="505" width="120" height="40" rx="20"/><rect x="2680" y="510" width="90" height="34" rx="17"/><rect x="3260" y="500" width="150" height="46" rx="23"/></g></g>
+            <g class="scroll-poles" fill="#4a4036" opacity=".85"><rect x="200" y="160" width="10" height="440"/><rect x="200" y="200" width="160" height="6"/><rect x="1160" y="160" width="10" height="440"/><rect x="1160" y="200" width="160" height="6"/><rect x="2120" y="160" width="10" height="440"/><rect x="2120" y="200" width="160" height="6"/><rect x="3080" y="160" width="10" height="440"/><rect x="3080" y="200" width="160" height="6"/></g>
+          </g>
+        </defs>
+
+        <!-- carriage -->
+        <rect width="1920" height="1080" fill="url(#wall)"/>
+        <rect x="0" y="40" width="1920" height="40" fill="#d7ccb9"/>
+        <rect x="0" y="88" width="1920" height="10" fill="#b7a98f"/>
+        <g clip-path="url(#win1)"><use href="#landscape"/></g>
+        <g clip-path="url(#win2)"><use href="#landscape" transform="translate(-1500 0)"/></g>
+        <rect x="120" y="150" width="760" height="400" rx="38" fill="none" stroke="#cbbfa9" stroke-width="16"/>
+        <rect x="1100" y="150" width="760" height="400" rx="38" fill="none" stroke="#cbbfa9" stroke-width="16"/>
+        <rect x="0" y="560" width="1920" height="22" fill="#c7baa3"/>
+
+        <!-- far passengers (right) -->
+        <g opacity=".55">
+          <rect x="1460" y="560" width="300" height="300" rx="34" fill="url(#seat)"/>
+          <circle cx="1560" cy="610" r="44" fill="#8a6a55"/><path d="M1500 860 C1500 700 1530 660 1560 660 S1625 700 1625 860 Z" fill="#6d7f8f"/>
+          <circle cx="1690" cy="625" r="40" fill="#5b4638"/><path d="M1640 860 C1640 720 1660 675 1690 675 S1745 720 1745 860 Z" fill="#a98a5c"/>
+        </g>
+
+        <!-- seat behind the main character -->
+        <rect x="660" y="520" width="700" height="440" rx="56" fill="url(#seat)"/>
+        <rect x="690" y="548" width="640" height="16" rx="8" fill="#ffffff" opacity=".12"/>
+
+        <!-- floor -->
+        <rect x="0" y="940" width="1920" height="140" fill="url(#floor)"/>
+        <rect x="0" y="936" width="1920" height="8" fill="#6f6355"/>
+
+        <!-- main character -->
+        <g id="person">
+          <!-- legs -->
+          <path d="M880 860 L 870 1000 L 930 1000 L 950 860 Z" fill="#2e3440"/>
+          <path d="M1010 860 L 1040 1000 L 1100 1000 L 1080 860 Z" fill="#2e3440"/>
+          <rect x="840" y="990" width="110" height="34" rx="16" fill="#f1ede6"/><rect x="1030" y="990" width="110" height="34" rx="16" fill="#f1ede6"/>
+          <!-- lap / bag -->
+          <rect x="840" y="820" width="290" height="70" rx="30" fill="#3a4250"/>
+          <rect x="1090" y="780" width="120" height="110" rx="18" fill="#a46b47"/><rect x="1110" y="770" width="80" height="20" rx="10" fill="none" stroke="#7c4f33" stroke-width="8"/>
+          <!-- torso -->
+          <path d="M860 840 C 850 700 880 640 990 630 C 1100 640 1130 700 1120 840 Z" fill="#c8a25a"/>
+          <path d="M935 640 L 990 720 L 1045 640 Z" fill="#e9ddc7"/>
+          <!-- scarf -->
+          <path d="M930 632 C 960 655 1020 655 1050 632 L 1060 660 C 1020 690 960 690 920 660 Z" fill="#2f5f48"/>
+          <!-- head -->
+          <rect x="968" y="590" width="44" height="52" rx="14" fill="#b9805b"/>
+          <ellipse cx="990" cy="540" rx="62" ry="72" fill="#c68a62"/>
+          <path d="M926 532 C 924 470 960 448 996 450 C 1040 452 1062 486 1056 534 C 1046 506 1020 494 990 494 C 960 494 938 508 926 532 Z" fill="#2b211c"/>
+          <ellipse cx="928" cy="548" rx="10" ry="16" fill="#b9805b"/>
+          <!-- face looking down at phone -->
+          <path d="M964 566 q 10 6 20 0" stroke="#3a2a22" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <path d="M1002 566 q 10 6 20 0" stroke="#3a2a22" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <path d="M984 598 q 8 4 16 0" stroke="#8c5a3e" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+          <!-- earbud -->
+          <circle cx="930" cy="552" r="6" fill="#f4f4f4"/>
+          <!-- arms -->
+          <path d="M880 700 C 850 760 880 800 960 690" stroke="#c8a25a" stroke-width="46" fill="none" stroke-linecap="round"/>
+          <path d="M1100 700 C 1130 760 1100 790 1040 680" stroke="#c8a25a" stroke-width="46" fill="none" stroke-linecap="round"/>
+          <!-- phone in hands -->
+          <g id="buzz">
+            <ellipse id="glow" cx="1012" cy="640" rx="90" ry="70" fill="url(#screenGlow)"/>
+            <rect x="986" y="598" width="52" height="92" rx="10" fill="#1b1b1b" transform="rotate(-8 1012 644)"/>
+            <rect x="990" y="603" width="44" height="82" rx="7" fill="#f6d7b5" transform="rotate(-8 1012 644)"/>
+            <rect id="miniNotif" x="992" y="612" width="40" height="14" rx="4" fill="#fff" opacity="0" transform="rotate(-8 1012 644)"/>
+          </g>
+          <ellipse cx="972" cy="676" rx="18" ry="14" fill="#c68a62"/>
+          <ellipse cx="1050" cy="668" rx="18" ry="14" fill="#c68a62"/>
+        </g>
+
+        <!-- handrail pole close to camera -->
+        <rect x="1480" y="0" width="34" height="1080" fill="#cfc6b6"/><rect x="1484" y="0" width="8" height="1080" fill="#fff" opacity=".5"/>
+        <!-- passing shadow (pylons) -->
+      </svg>
+      <div id="vignette"></div>
+    </div>
+    <div id="bubble">
+      <svg class="ic" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#2f5f48"/><path d="M256 120l41.6 94.4L392 256l-94.4 41.6L256 392l-41.6-94.4L120 256l94.4-41.6z" fill="#f6f2ea"/><circle cx="256" cy="256" r="34" fill="#c9a24e"/></svg>
+      <div><b>Morning adhkar time</b><div id="bubbleBody">Dua of Musa for ease</div></div>
+    </div>
+    <div id="trainCaption"><div class="num">05</div><h1>7:30, on the way to work</h1><p>The reminder arrives at the right time of day.</p></div>
+  </div>
+
+  <div id="titlecard" class="full"></div>
+  <div id="touch"></div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const ICON = (d) => `<svg viewBox="0 0 24 24">${d}</svg>`;
+const RAIL = (n1, n2, n3) => `<div class="rail">
+  <div>${ICON('<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>')}${n1}</div>
+  <div>${ICON('<path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.2A8 8 0 1 1 20 12z"/>')}${n2}</div>
+  <div>${ICON('<path d="m21 4-9 16-2-7-7-2z"/>')}${n3}</div>
+  <div>${ICON('<path d="M6 3h12v18l-6-4-6 4z"/>')}</div></div>`;
+const META = (who, cap, color) => `<div class="meta"><div class="who"><span class="av" style="background:${color}"></span>${who}<span class="follow">Follow</span></div><div class="cap">${cap}</div></div>`;
+const TOP = `<div class="topbar"><span>Following</span><span class="cur">For you</span></div>`;
+
+function buildFeed(reel) {
+  const feed = $("#feed");
+  feed.innerHTML = `
+  <div class="reel" style="top:0">
+    <div class="bg" style="background:linear-gradient(160deg,#f2a65a,#c4566b 60%,#5b3a75)"><span class="blob" style="width:260px;height:260px;left:40px;top:120px;background:#ffd28a"></span><span class="blob" style="width:220px;height:220px;left:180px;top:520px;background:#8a4fb0;animation-delay:-3s"></span></div>
+    <div class="shade"></div>${TOP}<div class="bigtext">sunset drive<br>with no destination</div>${RAIL("48.1K", "612", "2,140")}${META("roadtrip.stories", "golden hour hits different", "#f2a65a")}
+  </div>
+  <div class="reel" style="top:868px">
+    <div class="bg" style="background:linear-gradient(200deg,#e9d3b4,#b98758 55%,#6b4a33)"><span class="blob" style="width:240px;height:240px;left:120px;top:200px;background:#fff1d6"></span><span class="blob" style="width:200px;height:200px;left:20px;top:560px;background:#8d5b38;animation-delay:-4s"></span></div>
+    <div class="shade"></div>${TOP}<div class="bigtext">5-minute<br>breakfast idea</div>${RAIL("9,804", "201", "377")}${META("slow.kitchen", "save for tomorrow", "#b98758")}
+  </div>
+  <div class="reel" style="top:1736px" id="duaReel">
+    <div class="bg" style="background:radial-gradient(120% 80% at 50% 30%,#1f4a3a,#0d211a 70%)"><span class="blob" style="width:230px;height:230px;left:-30px;top:80px;background:#2f6a52;opacity:.5"></span><span class="blob" style="width:200px;height:200px;left:220px;top:600px;background:#4a3f1e;opacity:.45;animation-delay:-5s"></span></div>
+    ${TOP}
+    <div class="dua-card"><div class="orn"></div>
+      <div class="ar">${reel.verses.map((v) => v.text).join("<br>")}</div>
+      <div class="en">${reel.verses.map((v) => v.translation).join(" ")}</div>
+      <div class="src">${reel.label}</div>
+    </div>
+    ${RAIL("212K", "1,930", "38.4K")}${META("quiet.reminders", "#morning #dua #quran", "#2f6a52")}
+  </div>`;
+}
+
+let reelData = null;
+async function init() {
+  reelData = await (await fetch("/reel-data.json")).json();
+  buildFeed(reelData);
+  $("#notifBody").textContent = reelData.notifBody;
+  $("#bubbleBody").textContent = reelData.notifBody;
+  if (new URLSearchParams(location.search).has("only")) {
+    // Screenshot mode: just the reel screen at phone size.
+    document.body.style.cssText = "width:390px;height:868px;background:#000";
+    const screen = document.querySelector("#phone .screen");
+    document.body.innerHTML = "";
+    document.body.appendChild(screen);
+    screen.style.borderRadius = "0";
+    screen.querySelector(".island").remove();
+    $("#feed").style.transition = "none";
+    $("#feed").style.transform = "translateY(-1736px)";
+    document.querySelectorAll(".blob").forEach((b) => (b.style.animation = "none"));
+  }
+  await document.fonts.ready;
+  document.body.dataset.ready = "1";
+}
+init();
+
+window.film = {
+  caption(num, title, text) {
+    const c = $("#captions");
+    c.innerHTML = `<div class="cap-enter"><div class="num">${num}</div><h1>${title}</h1>${text ? `<p>${text}</p>` : ""}<div class="rule"></div></div>`;
+  },
+  hideCaption() { $("#captions").innerHTML = ""; },
+  layer(name) {
+    document.querySelectorAll(".layer").forEach((l) => l.classList.toggle("on", l.id === name));
+    $("#sb").classList.toggle("dark", name === "appwrap");
+  },
+  setTime(t) { $("#sbtime").textContent = t; },
+  scrollFeed(i) { $("#feed").style.transform = `translateY(${-868 * i}px)`; },
+  flash() { const f = $("#flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); },
+  thumb(src) { const t = $("#thumb"); t.className = ""; t.src = src; t.style.opacity = 1; requestAnimationFrame(() => setTimeout(() => t.classList.add("small"), 120)); },
+  thumbAway() { $("#thumb").classList.add("gone"); },
+  touch(x, y, show = true) { const t = $("#touch"); t.style.left = x + "px"; t.style.top = y + "px"; t.classList.toggle("on", show); },
+  press(on) { $("#touch").classList.toggle("press", on); },
+  hideTouch() { $("#touch").classList.remove("on"); },
+  phone(visible) { $("#phone").style.opacity = visible ? 1 : 0; },
+  title(html) { const t = $("#titlecard"); t.innerHTML = html; t.classList.add("on"); },
+  hideTitle() { $("#titlecard").classList.remove("on"); },
+  train(on) { $("#train").classList.toggle("on", on); },
+  trainBuzz() { $("#buzz").classList.add("go"); $("#glow").classList.add("on"); $("#miniNotif").setAttribute("opacity", "1"); setTimeout(() => $("#bubble").classList.add("show"), 500); },
+  trainZoom() { $("#bubble").classList.remove("show"); $("#trainCaption").style.opacity = 0; $("#trainWorld").classList.add("zoom"); },
+  notify(on) { $("#notif").classList.toggle("show", on); },
+  appSrc(url) { $("#app").src = url; },
+};
+</script>
+</body>
+</html>

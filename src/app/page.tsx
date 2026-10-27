@@ -1,68 +1,81 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Wordmark } from "@/components/shell/logo";
+import { config } from "@/lib/config";
 
-export default function Home() {
+const STEPS = [
+  { title: "Save it", body: "Add the screenshot you took on Instagram, TikTok or YouTube. The text is read on your device." },
+  { title: "Check it", body: "The Arabic is compared with trusted datasets. When a source can't be confirmed, DuaVault says so." },
+  { title: "Find it", body: "Items are filed as duas, adhkar, verses, hadith or reminders, and can be searched by situation." },
+  { title: "Practise it", body: "A daily dua from your own library, reminders at the right time of day, and flashcards for memorizing." },
+];
+
+export default function LandingPage() {
+  const startHref = config.dataMode === "supabase" ? "/auth" : "/home";
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <div className="min-h-dvh">
+      <header className="safe-top mx-auto flex max-w-5xl items-center justify-between border-b px-4 py-4 sm:px-6">
+        <Wordmark />
+        <Link href={startHref} className="text-sm font-medium hover:underline">
+          {config.dataMode === "supabase" ? "Sign in" : "Open app"}
+        </Link>
+      </header>
+
+      <main className="mx-auto max-w-5xl px-4 sm:px-6">
+        <section className="max-w-2xl pt-16 pb-20 sm:pt-24">
+          <h1 className="text-[2.5rem] leading-[1.1] font-medium sm:text-[3.4rem]">
+            A home for the duas you keep screenshotting.
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
+            DuaVault turns the Islamic posts saved in your camera roll into an organised library you&apos;ll actually return to — to read,
+            memorize and practise.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <Button asChild size="lg" className="h-11 px-5 text-[0.95rem]">
+              <Link href={startHref}>
+                Get started <ArrowRight />
+              </Link>
+            </Button>
+            <p className="text-sm text-muted-foreground">Free. No account needed. Your data stays on your device.</p>
+          </div>
+        </section>
+
+        <section className="border-t py-12">
+          <ol className="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map(({ title, body }, i) => (
+              <li key={title}>
+                <p className="text-sm text-muted-foreground tabular-nums">{String(i + 1).padStart(2, "0")}</p>
+                <h2 className="mt-1 text-xl font-medium">{title}</h2>
+                <p className="mt-1.5 text-[0.95rem] leading-relaxed text-muted-foreground">{body}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="border-t py-16 text-center">
+          <figure className="mx-auto max-w-xl">
+            <blockquote>
+              <p lang="ar" dir="rtl" className="arabic text-[2.1rem] leading-[2.4] text-forest sm:text-[2.75rem]">
+                أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ
+              </p>
+              <p className="mt-5 font-display text-xl leading-relaxed text-foreground/80 italic sm:text-2xl">
+                “Unquestionably, by the remembrance of Allah hearts are assured.”
+              </p>
+            </blockquote>
+            <figcaption className="mt-4 text-sm text-muted-foreground">
+              Quran 13:28
+              <span className="mt-1 block text-xs text-muted-foreground/70">Arabic: Tanzil · Translation: Saheeh International</span>
+            </figcaption>
+          </figure>
+        </section>
+
+        <footer className="border-t py-8 text-sm leading-relaxed text-muted-foreground">
+          <p className="max-w-2xl">
+            DuaVault uses on-device text recognition and simple, transparent rules — not a chatbot. It never invents references, grades or
+            translations, tells you when a source can&apos;t be verified, and does not issue religious rulings.
+          </p>
+        </footer>
       </main>
     </div>
   );
