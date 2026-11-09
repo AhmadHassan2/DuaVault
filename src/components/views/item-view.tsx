@@ -101,11 +101,13 @@ export function ItemView() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-6xl">
       <button type="button" onClick={() => router.back()} className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" /> Back
       </button>
 
+      <div className="grid items-start gap-8 lg:grid-cols-[1fr_20rem]">
+      <div className="min-w-0">
       <Tabs defaultValue="card">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <TypeLabel item={it} />
@@ -120,9 +122,9 @@ export function ItemView() {
         </div>
 
         <TabsContent value="card">
-          <article className="paper-card px-5 py-7 sm:px-10 sm:py-10" data-testid="reading-card">
+          <article className="sanctuary-panel px-5 py-7 sm:px-10 sm:py-10" data-testid="reading-card">
             <h1 className="text-3xl leading-tight font-medium sm:text-[2.4rem]">{it.title}</h1>
-            {it.arabicText && <ArabicText size="xl" className="mt-8">{it.arabicText}</ArabicText>}
+            {it.arabicText && <ArabicText size="xl" className="mt-8 text-forest">{it.arabicText}</ArabicText>}
             {it.transliteration && (
               <p className="mt-6 border-l-2 border-gold/50 pl-4 text-[1.02rem] leading-relaxed text-muted-foreground italic">{it.transliteration}</p>
             )}
@@ -160,9 +162,12 @@ export function ItemView() {
           </div>
         </TabsContent>
       </Tabs>
+      </div>
 
-      <div className="mt-5 flex flex-wrap gap-2">
-        <Button onClick={() => markPracticed(it)} disabled={!!practicedToday}>
+      <aside className="paper-card p-5 lg:sticky lg:top-6" aria-label="Reading tools">
+      <p className="eyebrow mb-5">Make it part of your day</p>
+      <div className="grid grid-cols-2 gap-2">
+        <Button onClick={() => markPracticed(it)} disabled={!!practicedToday} className="col-span-2">
           <Check /> {practicedToday ? "Practiced today" : "Mark as practiced"}
         </Button>
         <Button variant="outline" onClick={() => toggleFavorite(it)} aria-pressed={it.isFavorite}>
@@ -226,6 +231,8 @@ export function ItemView() {
           <p className="whitespace-pre-line text-muted-foreground">{it.notes}</p>
         </section>
       )}
+      </aside>
+      </div>
 
       <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-4 text-xs text-muted-foreground">
         <span>

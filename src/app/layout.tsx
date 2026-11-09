@@ -24,8 +24,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f2ea" },
-    { media: "(prefers-color-scheme: dark)", color: "#171f1c" },
+    { media: "(prefers-color-scheme: light)", color: "#dce3d6" },
+    { media: "(prefers-color-scheme: dark)", color: "#101b16" },
   ],
 };
 
@@ -34,7 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${ui.variable} ${display.variable} ${arabicQuran.variable} ${arabicNaskh.variable} h-full`}
+      className={`${ui.variable} ${display.variable} ${arabicQuran.variable} ${arabicNaskh.variable} h-full dark`}
     >
       <head>
         <ThemeScript />

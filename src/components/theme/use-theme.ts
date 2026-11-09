@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useSyncExternalStore } from "react";
-import { THEME_KEY } from "./theme-script";
+import { DEFAULT_THEME, THEME_KEY } from "./theme-script";
 
 export type ThemePreference = "light" | "dark" | "system";
 
@@ -10,9 +10,9 @@ const listeners = new Set<() => void>();
 function read(): ThemePreference {
   try {
     const v = localStorage.getItem(THEME_KEY);
-    return v === "light" || v === "dark" ? v : "system";
+    return v === "light" || v === "dark" || v === "system" ? v : DEFAULT_THEME;
   } catch {
-    return "system";
+    return DEFAULT_THEME;
   }
 }
 
@@ -29,7 +29,7 @@ export function useTheme() {
       return () => listeners.delete(cb);
     },
     read,
-    () => "system" as ThemePreference,
+    () => DEFAULT_THEME as ThemePreference,
   );
   const setTheme = useCallback((pref: ThemePreference) => {
     try {

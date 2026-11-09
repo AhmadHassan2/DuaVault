@@ -35,15 +35,16 @@ export function QuickUpload({ className }: { className?: string }) {
         handle(e.dataTransfer.files);
       }}
       className={cn(
-        "flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors hover:border-foreground/25",
+        "group flex w-full flex-col items-start gap-5 rounded-2xl border border-primary/25 bg-gold-soft/40 p-6 text-left transition-colors hover:border-primary/60 hover:bg-gold-soft/65 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring",
         dragging && "border-primary bg-secondary",
         className,
       )}
     >
-      <ImagePlus className="size-5 shrink-0 text-primary" strokeWidth={1.8} />
+      <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/15 text-primary"><ImagePlus aria-hidden="true" className="size-6 shrink-0" strokeWidth={1.8} /></span>
       <span>
-        <span className="block text-sm font-medium">Save a screenshot</span>
-        <span className="block text-xs text-muted-foreground">Choose or drop images</span>
+        <span className="block font-display text-2xl font-medium">Save a screenshot</span>
+        <span className="mt-2 block text-sm text-muted-foreground">Save a dua or Islamic reminder.</span>
+        <span className="mt-5 inline-flex min-h-10 items-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground">Choose or drop images</span>
       </span>
       <input ref={input} type="file" accept={ACCEPTED_IMAGES} multiple hidden onChange={(e) => handle(e.target.files)} />
     </button>

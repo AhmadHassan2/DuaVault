@@ -1,5 +1,5 @@
 /* DuaVault service worker — app-shell caching + Web Share Target handling. */
-const VERSION = "duavault-v1";
+const VERSION = "duavault-forest-v3";
 const SHELL = ["/home", "/library", "/add", "/practice", "/profile", "/manifest.webmanifest", "/icons/icon.svg"];
 
 self.addEventListener("install", (event) => {

@@ -29,7 +29,7 @@ export function ItemCard({
     <Link
       href={`/items/${item.id}`}
       className={cn(
-        "paper-card group flex h-full flex-col gap-2.5 p-4 transition-colors hover:border-foreground/25 focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none",
+        "paper-card interactive-card group flex h-full flex-col gap-4 p-5 focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:outline-none",
         className,
       )}
     >
@@ -37,14 +37,14 @@ export function ItemCard({
         <TypeLabel item={item} />
         {item.isFavorite && <Heart className="size-4 shrink-0 fill-gold text-gold" aria-label="Favorite" />}
       </div>
-      <h3 className="line-clamp-2 font-display text-lg leading-snug font-medium group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">{item.title}</h3>
+      <h3 className="line-clamp-2 font-display text-2xl leading-snug font-medium group-hover:text-primary">{item.title}</h3>
       {item.arabicText && (
-        <p lang="ar" dir="rtl" className="arabic line-clamp-2 text-right text-xl leading-[2] text-foreground/90">
+        <p lang="ar" dir="rtl" className="arabic line-clamp-2 rounded-xl bg-sage-soft/40 px-3 py-2 text-right text-2xl leading-[2] text-forest">
           {item.arabicText}
         </p>
       )}
       {item.englishText && <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{item.englishText}</p>}
-      <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
+      <div className="mt-auto flex flex-wrap items-center gap-2 border-t pt-4">
         <VerificationBadge status={item.verification.status} compact />
         {memorization && memorization !== "not_started" && (
           <span className="text-[11px] text-muted-foreground capitalize">· {memorization}</span>
