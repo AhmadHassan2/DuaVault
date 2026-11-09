@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, History } from "lucide-react";
+import { ArrowRight, History, Sprout } from "lucide-react";
 import { progressSummary, reviewQueue } from "@/core/schedule/srs";
 import { neverRevisited } from "@/core/schedule/daily";
 import { useItems, usePractice, useProgress } from "@/lib/data/hooks";
@@ -25,15 +25,21 @@ export function PracticeView() {
 
   return (
     <div className="space-y-10">
-      <PageHeader title="Practice" description="Today's dua, and the cards you're memorizing." />
+      <PageHeader eyebrow="Regular review and remembrance" title="Practice" description="Read your saved duas and review what you are memorizing." />
 
+      <div className="grid items-start gap-8 lg:grid-cols-[1fr_22rem]">
+      <section className="min-w-0"><p className="eyebrow mb-4">01 · Read & understand</p>
       {items.loading ? <div className="paper-card h-72 animate-pulse" /> : <DailyCard items={all} progress={prog} />}
+      <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground">Read the Arabic carefully and reflect on its meaning.</p>
+      </section>
 
-      <section className="paper-card p-5 sm:p-6">
-        <div className="flex flex-wrap items-center gap-4">
+      <section className="paper-card p-6 lg:sticky lg:top-6">
+        <p className="eyebrow mb-6">02 · Review your memorization</p>
+        <Sprout aria-hidden="true" className="mb-5 size-8 text-forest" />
+        <div className="flex flex-col items-start gap-5">
           <div className="min-w-0 flex-1">
-            <h2 className="text-xl font-medium">Memorization</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="text-3xl font-medium">Memorization</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {summary.total
                 ? due.length
                   ? `${due.length} ready to review`
@@ -41,7 +47,7 @@ export function PracticeView() {
                 : "Add duas to your memorization list from any item."}
             </p>
           </div>
-          <Button asChild disabled={!summary.total}>
+          <Button asChild className="w-full">
             <Link href="/practice/memorize">
               {due.length ? "Start review" : "Open flashcards"} <ArrowRight />
             </Link>
@@ -58,7 +64,9 @@ export function PracticeView() {
           </div>
         )}
       </section>
+      </div>
 
+      <div className="grid items-start gap-10 border-t pt-8 lg:grid-cols-2">
       {unread.length > 0 && (
         <section>
           <SectionHeading title="Haven't opened since saving" />
@@ -90,6 +98,7 @@ export function PracticeView() {
           <p className="text-sm text-muted-foreground">Items you mark as read or review will be listed here.</p>
         )}
       </section>
+      </div>
     </div>
   );
 }

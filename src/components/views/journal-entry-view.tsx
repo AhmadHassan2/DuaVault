@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Lock, Trash2 } from "lucide-react";
@@ -23,8 +23,9 @@ const EMPTY: Draft = { title: "", body: "", arabicText: "", topic: "", reminderE
 export function JournalEntryView() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const isNew = id === "new";
-  const [draft, setDraft] = useState<Draft | null>(isNew ? EMPTY : null);
+  const [draft, setDraft] = useState<Draft | null>(() => isNew ? { ...EMPTY, title: (searchParams.get("prompt") ?? "").slice(0, 200) } : null);
   const [saving, setSaving] = useState(false);
   const [missing, setMissing] = useState(false);
 
@@ -62,11 +63,13 @@ export function JournalEntryView() {
   const remindersSupported = typeof window !== "undefined" && "Notification" in window;
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-5xl">
+      <h1 className="sr-only">{isNew ? "Write a reflection" : "Edit your reflection"}</h1>
       <Link href="/journal" className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" /> Journal
       </Link>
-      <div className="paper-card space-y-5 p-5 sm:p-8">
+      <div className="grid items-start gap-6 lg:grid-cols-[1fr_18rem]">
+      <section className="paper-card space-y-5 p-5 sm:p-8" aria-label="Your writing space">
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Lock className="size-3" /> Private · your own words, not Quran or hadith
         </p>
@@ -83,8 +86,11 @@ export function JournalEntryView() {
           onChange={(e) => setDraft({ ...draft, body: e.target.value })}
           placeholder="O Allah… / Today I reflected on…"
           aria-label="Entry"
-          className="min-h-56 resize-y border-0 bg-transparent px-0 font-display text-lg leading-relaxed shadow-none focus-visible:ring-0 dark:bg-transparent"
+          className="min-h-80 resize-y border-0 bg-transparent px-0 font-display text-xl leading-relaxed shadow-none focus-visible:ring-0 dark:bg-transparent"
         />
+        </section>
+        <aside className="paper-card space-y-6 p-5 lg:sticky lg:top-6" aria-label="Reflection details">
+        <p className="eyebrow">Entry details</p>
         <div className="space-y-1.5">
           <Label htmlFor="j-ar">In Arabic (optional)</Label>
           <Textarea
@@ -96,7 +102,7 @@ export function JournalEntryView() {
             className="arabic min-h-20 text-xl"
           />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-5">
           <div className="space-y-1.5">
             <Label htmlFor="j-topic">Topic</Label>
             <Select value={draft.topic || "none"} onValueChange={(v) => setDraft({ ...draft, topic: v === "none" ? "" : v })}>
@@ -140,7 +146,8 @@ export function JournalEntryView() {
             The reminder time is saved with this entry. Scheduled notifications aren&apos;t delivered yet — that needs a future native app or push setup.
           </p>
         )}
-        <div className="flex items-center justify-between gap-2 border-t pt-4">
+        </aside>
+        <div className="flex items-center justify-between gap-2 border-t pt-4 lg:col-span-2">
           {!isNew ? (
             <Button
               variant="ghost"

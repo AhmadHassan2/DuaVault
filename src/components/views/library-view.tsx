@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { BookOpen, Search, SlidersHorizontal, X } from "lucide-react";
+import { BookOpen, Search, SlidersHorizontal, X, LayoutGrid, List, ArrowUpRight, FolderHeart } from "lucide-react";
 import type { ContentType, SavedItem } from "@/core/types";
 import { TAXONOMY, getTypeDefinition } from "@/core/taxonomy";
 import { topicLabel } from "@/core/classify/topics";
@@ -36,6 +36,7 @@ export function LibraryView({ type }: { type?: ContentType }) {
   const [sort, setSort] = useState<Sort>("saved");
   const [tag, setTag] = useState<string>("any");
   const [subcategory, setSubcategory] = useState<string>("any");
+  const [layout, setLayout] = useState<"grid" | "list">("grid");
 
   const progressById = useMemo(() => new Map((progress.data ?? []).map((p) => [p.itemId, p.state])), [progress.data]);
   const all = items.data ?? [];
@@ -67,8 +68,9 @@ export function LibraryView({ type }: { type?: ContentType }) {
   return (
     <div>
       <PageHeader
+        eyebrow="Saved duas and reminders"
         title={def ? def.label : "Library"}
-        description={def ? def.description : undefined}
+        description={def ? def.description : "Your saved duas, adhkar, Quran verses and Islamic reminders."}
         actions={
           <Button asChild>
             <Link href="/add">Add</Link>
@@ -76,30 +78,36 @@ export function LibraryView({ type }: { type?: ContentType }) {
         }
       />
 
-      <nav aria-label="Categories" className="-mx-4 mb-6 flex gap-5 overflow-x-auto border-b px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
+      <div className="grid items-start gap-7 lg:grid-cols-[13rem_1fr] xl:gap-10">
+      <aside className="min-w-0 lg:sticky lg:top-6">
+      <p className="eyebrow mb-4 hidden lg:block">Browse categories</p>
+      <nav aria-label="Categories" className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin] lg:flex-col lg:overflow-visible">
         {[{ href: "/library", label: "All", count: all.length, active: !type }, ...TAXONOMY.map((t) => ({ href: `/library/${t.type}`, label: t.label, count: counts.get(t.type) ?? 0, active: type === t.type }))].map((tab) => (
           <Link
             key={tab.href}
             href={tab.href}
             aria-current={tab.active ? "page" : undefined}
             className={cn(
-              "-mb-px border-b-2 pb-2.5 text-sm whitespace-nowrap transition-colors",
-              tab.active ? "border-foreground font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
+              "inline-flex min-h-12 shrink-0 items-center justify-between gap-4 rounded-xl border px-4 text-sm whitespace-nowrap transition-colors lg:w-full",
+              tab.active ? "border-primary/30 bg-secondary font-medium text-secondary-foreground" : "border-transparent text-muted-foreground hover:border-border hover:bg-card hover:text-foreground",
             )}
           >
-            {tab.label} <span className="text-muted-foreground tabular-nums">{tab.count}</span>
+            {tab.label} <span className="text-xs text-muted-foreground tabular-nums">{tab.count}</span>
           </Link>
         ))}
       </nav>
+      <div className="mt-6 hidden border-t pt-6 lg:block"><Link href="/collections" className="flex min-h-11 items-center gap-2 text-sm text-primary"><FolderHeart aria-hidden="true" className="size-4" />Your collections <ArrowUpRight aria-hidden="true" className="ml-auto size-4" /></Link><p className="mt-4 text-xs leading-relaxed text-muted-foreground">Organize duas for your family, daily adhkar or study.</p></div>
+      </aside>
+      <section className="min-w-0" aria-label="Library items">
 
-      <div className="mb-6 space-y-3">
+      <div className="mb-6 space-y-4">
         <div className="relative">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search in Arabic or English…"
-            className="h-10 pl-9"
+            className="h-14 bg-card pl-10 text-base"
             dir="auto"
             aria-label="Search your library"
           />
@@ -112,8 +120,8 @@ export function LibraryView({ type }: { type?: ContentType }) {
               onClick={() => setFilter(f.id)}
               aria-pressed={filter === f.id}
               className={cn(
-                "rounded-md px-2.5 py-1 text-sm transition-colors",
-                filter === f.id ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+                "min-h-11 rounded-full px-3 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-ring",
+                filter === f.id ? "bg-primary/15 font-medium text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               {f.label}
@@ -165,6 +173,14 @@ export function LibraryView({ type }: { type?: ContentType }) {
         </div>
       </div>
 
+      <div className="mb-5 flex items-center justify-between gap-3 border-t pt-4">
+        <p className="text-sm text-muted-foreground" role="status">{items.loading ? "Opening your library…" : `${visible.length} ${visible.length === 1 ? "item" : "items"}${anyFilter ? " found" : " to return to"}`}</p>
+        <div className="flex gap-1 rounded-xl border p-1" role="group" aria-label="Library layout">
+          <Button variant={layout === "grid" ? "secondary" : "ghost"} size="icon" className="size-10" onClick={() => setLayout("grid")} aria-label="Grid view" aria-pressed={layout === "grid"}><LayoutGrid aria-hidden="true" /></Button>
+          <Button variant={layout === "list" ? "secondary" : "ghost"} size="icon" className="size-10" onClick={() => setLayout("list")} aria-label="List view" aria-pressed={layout === "list"}><List aria-hidden="true" /></Button>
+        </div>
+      </div>
+
       {items.loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -174,9 +190,9 @@ export function LibraryView({ type }: { type?: ContentType }) {
       ) : items.error ? (
         <p className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm">Couldn&apos;t load your library: {items.error.message}</p>
       ) : visible.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="library-grid">
+        <div className={layout === "grid" ? "grid gap-4 sm:grid-cols-2 xl:grid-cols-3" : "divide-y rounded-2xl border bg-card px-5"} data-testid="library-grid">
           {visible.map((item) => (
-            <ItemCard key={item.id} item={item} memorization={progressById.get(item.id)} />
+            layout === "grid" ? <ItemCard key={item.id} item={item} memorization={progressById.get(item.id)} /> : <Link key={item.id} href={`/items/${item.id}`} className="group flex items-center gap-4 py-5"><span className="hidden size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground sm:flex"><BookOpen aria-hidden="true" className="size-5" /></span><span className="min-w-0 flex-1"><span className="mb-1 block text-xs text-muted-foreground">{getTypeDefinition(item.contentType).singular}</span><span className="block truncate font-display text-xl group-hover:text-primary">{item.title}</span><span className="mt-1 block truncate text-sm text-muted-foreground">{item.englishText || "Open to read"}</span></span><ArrowUpRight aria-hidden="true" className="size-5 shrink-0 text-primary" /></Link>
           ))}
         </div>
       ) : anyFilter ? (
@@ -210,6 +226,8 @@ export function LibraryView({ type }: { type?: ContentType }) {
           }
         />
       )}
+      </section>
+      </div>
     </div>
   );
 }

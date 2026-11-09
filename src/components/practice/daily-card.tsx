@@ -32,11 +32,11 @@ export function DailyCard({
     return (
       <EmptyState
         icon={Sunrise}
-        title="No daily dua yet"
-        description="Once you've saved a few duas, verses or reminders, one is picked here each day — favouring the ones you haven't opened in a while."
+        title="Save a dua to begin"
+        description="Save duas or Islamic reminders to see one here each day for reading and review."
         action={
           <Button asChild>
-            <Link href="/add">Add your first</Link>
+            <Link href="/add">Save your first dua</Link>
           </Button>
         }
         className={className}
@@ -48,7 +48,7 @@ export function DailyCard({
   const practicedToday = item.lastReviewedAt && new Date(item.lastReviewedAt).toDateString() === new Date().toDateString();
 
   return (
-    <section aria-label="Today's dua" className={cn("paper-card", className)} data-testid="daily-card">
+    <section aria-label="Today's dua" className={cn("sanctuary-panel overflow-hidden", className)} data-testid="daily-card">
       <AnimatePresence mode="wait">
         <motion.div
           key={item.id}
@@ -62,10 +62,10 @@ export function DailyCard({
             <p>Today&apos;s dua · <TypeLabel item={item} className="text-sm" /></p>
             <VerificationBadge status={item.verification.status} compact />
           </div>
-          <h2 className="mt-3 text-2xl font-medium sm:text-[1.75rem]">{item.title}</h2>
+          <h2 className="mt-4 text-3xl font-medium">{item.title}</h2>
           {item.arabicText && <ArabicText size="xl" className="mt-6">{item.arabicText}</ArabicText>}
           {item.englishText && (
-            <p className="mt-5 max-w-prose font-display text-[1.12rem] leading-relaxed text-foreground/90">{item.englishText}</p>
+            <p className="mt-5 max-w-prose font-display text-xl leading-relaxed text-foreground/90">{item.englishText}</p>
           )}
           {item.verification.referenceLabel && item.verification.status === "verified_match" && (
             <p className="mt-3 text-sm text-muted-foreground">{item.verification.referenceLabel}</p>

@@ -12,7 +12,7 @@ import { getOcrEngine, pipelineDeps } from "@/lib/pipeline";
 import { takePendingUploads } from "@/lib/pending-uploads";
 import { errorMessage } from "@/lib/actions";
 import { newId } from "@/lib/data/ids";
-import { PageHeader } from "@/components/common";
+import { EmptyState, PageHeader } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -252,10 +252,14 @@ export function AddView() {
   return (
     <div>
       <PageHeader
+        eyebrow="Save beneficial knowledge"
         title="Add to your vault"
-        description="Upload screenshots of duas, verses, hadith or reminders. Text is read on your device, and nothing is saved until you've reviewed it."
+        description="Add a dua, Quran verse, hadith or Islamic reminder. Review the text and source before saving."
       />
 
+      <div className="grid items-start gap-8 lg:grid-cols-[22rem_1fr] xl:gap-12">
+      <section className="min-w-0 lg:sticky lg:top-6" aria-label="Add a source">
+      <p className="eyebrow mb-4">01 · Add text or a screenshot</p>
       <Tabs defaultValue="image" className="mb-8">
         <TabsList>
           <TabsTrigger value="image">
@@ -279,12 +283,12 @@ export function AddView() {
               addFiles(files, files.map((f) => f.name));
             }}
             className={cn(
-              "flex flex-col items-center rounded-lg border border-dashed border-foreground/20 px-6 py-10 text-center transition-colors",
+              "sanctuary-panel flex flex-col items-center border-dashed border-primary/40 px-5 py-10 text-center transition-colors",
               dragging && "border-primary bg-secondary",
             )}
           >
-            <ScanText className="size-6 text-muted-foreground" strokeWidth={1.6} />
-            <p className="mt-3 font-medium">Drop screenshots here</p>
+            <span className="flex size-20 items-center justify-center rounded-3xl border border-primary/20 bg-primary/10"><ScanText aria-hidden="true" className="size-9 text-primary" strokeWidth={1.4} /></span>
+            <p className="mt-6 font-display text-3xl font-medium">Drop screenshots here</p>
             <p className="mt-1 text-sm text-muted-foreground">PNG, JPG, WebP or HEIC · several at once is fine</p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
               <Button onClick={() => fileInput.current?.click()}>
@@ -342,7 +346,10 @@ export function AddView() {
           </Button>
         </TabsContent>
       </Tabs>
+      </section>
 
+      <section className="min-w-0" aria-label="Review desk">
+      <div className="mb-5 flex items-center justify-between gap-3"><p className="eyebrow">02 · Review before saving</p><span className="text-xs text-muted-foreground">{entries.length ? `${entries.length} ${entries.length === 1 ? "source" : "sources"} added` : "Nothing is saved until you confirm"}</span></div>
       <div className="space-y-10">
         <AnimatePresence initial={false}>
           {entries.map((entry) => (
@@ -352,7 +359,7 @@ export function AddView() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, height: 0 }}
-              className="grid gap-5 lg:grid-cols-[17rem_1fr]"
+              className="grid gap-5 xl:grid-cols-[12rem_1fr]"
               aria-label={entry.name}
             >
               <div className="space-y-3 lg:sticky lg:top-8 lg:self-start">
@@ -454,10 +461,10 @@ export function AddView() {
           ))}
         </AnimatePresence>
         {entries.length === 0 && (
-          <p className="text-center text-sm text-muted-foreground">
-            Looking for something you saved? <Link href="/library" className="text-primary hover:underline">Open your library</Link>
-          </p>
+          <div><EmptyState icon={FileText} title="Review the text and reference" description="Add a screenshot or some text. Your reading card will appear here, ready for you to check." /><ol className="mt-6 grid gap-4 sm:grid-cols-3">{[{title:"Read the text",body:"Check Arabic and translation."},{title:"Check the source",body:"See matches and uncertainties."},{title:"Choose a category",body:"Choose a title and category."}].map(({title,body},i)=><li key={title} className="border-t pt-4"><span className="text-xs text-primary">0{i+1}</span><h3 className="mt-2 text-xl">{title}</h3><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{body}</p></li>)}</ol><p className="mt-7 text-sm text-muted-foreground">Already saved it? <Link href="/library" className="text-primary hover:underline">Open your library</Link></p></div>
         )}
+      </div>
+      </section>
       </div>
 
       {cropFor?.previewUrl && (

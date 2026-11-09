@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { BookMarked, Compass, Info, Search } from "lucide-react";
+import { ArrowUpRight, BookMarked, Compass, Info, Search } from "lucide-react";
 import { TOPIC_BY_SLUG } from "@/core/classify/topics";
 import { explainQuery, parseQuery, searchDocs, searchItems, type ParsedQuery, type SearchableDoc } from "@/core/search/search";
 import { stem } from "@/core/text/english";
@@ -10,7 +10,7 @@ import type { QuranVerse } from "@/core/verify/quran-matcher";
 import type { ReferenceEntry } from "@/core/types";
 import { useItems, useProgress } from "@/lib/data/hooks";
 import { getReferenceProvider } from "@/lib/references/static-provider";
-import { ArabicText, EmptyState, PageHeader, SectionHeading } from "@/components/common";
+import { ArabicText, PageHeader, SectionHeading } from "@/components/common";
 import { ItemCard } from "@/components/items/item-card";
 import { Input } from "@/components/ui/input";
 
@@ -88,9 +88,12 @@ export function FindView() {
 
   return (
     <div>
+      <div className="mx-auto max-w-3xl">
       <PageHeader
+        eyebrow="Search duas and reminders"
         title="Find what you need"
-        description="Describe what you're going through or looking for. Your own saved items come first."
+        description="Search by topic, need or occasion. Your saved items appear first."
+        className="justify-center text-center"
       />
       <div className="relative mb-3">
         <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground" />
@@ -98,34 +101,31 @@ export function FindView() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="e.g. “I'm feeling anxious about exams”"
-          className="h-14 rounded-lg pl-12 text-base shadow-sm"
+          className="h-16 rounded-2xl pl-12 text-lg shadow-sm"
           aria-label="Describe what you need"
           dir="auto"
           autoFocus
         />
       </div>
-      <div className="mb-8 flex flex-wrap gap-2">
+      {parsed && <div className="mb-8 flex flex-wrap gap-2">
         {EXAMPLES.map((e) => (
-          <button key={e} type="button" onClick={() => setQuery(e)} className="rounded-md border bg-card px-3 py-1 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground">
+          <button key={e} type="button" onClick={() => setQuery(e)} className="min-h-11 rounded-full border bg-card px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-secondary hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
             {e}
           </button>
         ))}
+      </div>}
       </div>
 
       {!parsed ? (
-        <EmptyState
-          icon={Compass}
-          title="Describe a situation or topic"
-          description="For example a feeling, a moment (“before travelling”) or a theme. Results come from keyword and topic matching — not religious rulings."
-        />
+        <section className="mx-auto mt-10 max-w-4xl"><p className="eyebrow mb-5 text-center">Browse common topics</p><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{EXAMPLES.map((example,i)=><button type="button" key={example} onClick={()=>setQuery(example)} className="paper-card interactive-card flex min-h-36 flex-col items-start justify-between gap-6 p-6 text-left"><Compass aria-hidden="true" className={`size-5 ${i%2===0?"text-primary":"text-forest"}`} /><span className="flex w-full items-center justify-between gap-3"><span className="font-display text-xl">{example}</span><ArrowUpRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" /></span></button>)}</div><p className="mx-auto mt-7 max-w-md text-center text-xs leading-relaxed text-muted-foreground">Explore your saved words and reference translations through topic matching. Read results in context; they are not religious rulings.</p></section>
       ) : (
-        <div className="space-y-10">
-          {explanation && <p className="text-sm text-muted-foreground">{explanation}</p>}
+        <div className="mt-10 grid items-start gap-10 lg:grid-cols-[1.3fr_1fr]">
+          {explanation && <p className="text-sm text-muted-foreground lg:col-span-2">{explanation}</p>}
 
           <section>
             <SectionHeading title="From your vault" />
             {saved.length ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="find-results">
+              <div className="grid gap-4 sm:grid-cols-2" data-testid="find-results">
                 {saved.slice(0, 12).map((h) => (
                   <ItemCard key={h.item.id} item={h.item} memorization={progressById.get(h.item.id)} />
                 ))}
@@ -134,13 +134,14 @@ export function FindView() {
               <p className="rounded-lg border border-dashed px-4 py-5 text-sm text-muted-foreground">
                 Nothing in your vault matches yet.{" "}
                 <Link href="/add" className="text-primary hover:underline">
-                  Save something
+                  Save a reminder
                 </Link>{" "}
                 — next time it&apos;ll be here.
               </p>
             )}
           </section>
 
+          <aside className="min-w-0 space-y-8">
           {refs.length > 0 && (
             <section>
               <SectionHeading title="From imported references" />
@@ -178,6 +179,8 @@ export function FindView() {
               </ul>
             </section>
           )}
+          {!refs.length && !verses.length && <div className="rounded-2xl border p-6"><BookMarked aria-hidden="true" className="mb-4 size-6 text-primary" /><h2 className="text-2xl">A place for trusted words</h2><p className="mt-3 text-sm leading-relaxed text-muted-foreground">Matches from your loaded reference datasets will appear here, alongside your own saved items.</p></div>}
+          </aside>
         </div>
       )}
     </div>

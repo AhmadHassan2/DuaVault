@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bell, BookMarked, CalendarPlus, Database, Download, Laptop, LogOut, Moon, NotebookPen, Search, Sun, Trash2, FolderHeart } from "lucide-react";
+import { Bell, BookMarked, CalendarPlus, Database, Download, Laptop, LogOut, Moon, Sun, Trash2 } from "lucide-react";
 import { config } from "@/lib/config";
 import { getRepository } from "@/lib/data/repository";
 import { useItems, useLiveQuery } from "@/lib/data/hooks";
@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 
 function Card({ title, children, description }: { title: string; description?: string; children: React.ReactNode }) {
   return (
-    <section className="paper-card p-5 sm:p-6">
+    <section id={title.toLowerCase().replaceAll(" ", "-")} className="paper-card scroll-mt-6 p-5 sm:p-6">
       <h2 className="text-xl font-medium">{title}</h2>
       {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
       <div className="mt-4">{children}</div>
@@ -41,8 +41,8 @@ function Card({ title, children, description }: { title: string; description?: s
 }
 
 const THEMES: Array<{ id: ThemePreference; label: string; icon: typeof Sun }> = [
-  { id: "light", label: "Light", icon: Sun },
-  { id: "dark", label: "Dark", icon: Moon },
+  { id: "light", label: "Sage", icon: Sun },
+  { id: "dark", label: "Forest", icon: Moon },
   { id: "system", label: "System", icon: Laptop },
 ];
 
@@ -80,19 +80,24 @@ export function ProfileView() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Profile & settings" />
+      <PageHeader eyebrow="Account preferences" title="Profile & settings" description="Manage your appearance, reminders and saved data." />
 
-      <nav className="grid grid-cols-3 gap-2 lg:hidden" aria-label="More">
+      <div className="grid items-start gap-8 lg:grid-cols-[14rem_1fr] lg:gap-12">
+      <nav className="flex gap-2 overflow-x-auto pb-2 lg:sticky lg:top-6 lg:flex-col" aria-label="Settings sections">
         {[
-          { href: "/find", label: "Find", icon: Search },
-          { href: "/collections", label: "Collections", icon: FolderHeart },
-          { href: "/journal", label: "Journal", icon: NotebookPen },
-        ].map(({ href, label, icon: Icon }) => (
-          <Link key={href} href={href} className="flex flex-col items-center gap-1.5 rounded-lg border bg-card py-4 text-sm hover:bg-muted">
-            <Icon className="size-5 text-primary" /> {label}
-          </Link>
+          { label: "Account", icon: Database },
+          { label: "Appearance", icon: Moon },
+          { label: "Reminders", icon: Bell },
+          { label: "Daily dua", icon: Sun },
+          { label: "Reference datasets", icon: BookMarked },
+          { label: "Your data", icon: Download },
+        ].map(({ label, icon: Icon }) => (
+          <a key={label} href={`#${label.toLowerCase().replaceAll(" ", "-")}`} className="flex min-h-12 shrink-0 items-center gap-3 rounded-xl px-4 text-sm text-muted-foreground transition-colors hover:bg-card hover:text-foreground">
+            <Icon aria-hidden="true" className="size-4 text-primary" /> {label}
+          </a>
         ))}
       </nav>
+      <div className="min-w-0 space-y-5">
 
       <Card title="Account" description={config.dataMode === "local" ? "You're using DuaVault in on-device mode." : undefined}>
         {config.dataMode === "local" ? (
@@ -123,18 +128,17 @@ export function ProfileView() {
         )}
       </Card>
 
-      <Card title="Appearance">
-        <div className="inline-flex rounded-md border bg-muted/50 p-1" role="radiogroup" aria-label="Theme">
+      <Card title="Appearance" description="Choose the Forest, Sage or system theme.">
+        <div className="grid max-w-lg grid-cols-3 gap-2" role="group" aria-label="Theme">
           {THEMES.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               type="button"
-              role="radio"
-              aria-checked={theme === id}
+              aria-pressed={theme === id}
               onClick={() => setTheme(id)}
               className={cn(
-                "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors",
-                theme === id ? "bg-card font-medium shadow-sm" : "text-muted-foreground hover:text-foreground",
+                "flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border px-3 py-4 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                theme === id ? "border-primary/50 bg-primary/10 font-medium text-primary" : "border-border bg-background/40 text-muted-foreground hover:border-primary/30 hover:text-foreground",
               )}
             >
               <Icon className="size-4" /> {label}
@@ -299,6 +303,8 @@ export function ProfileView() {
           </p>
         </div>
       </Card>
+      </div>
+      </div>
     </div>
   );
 }
